@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💦 Horny Workout Trainer</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff1493">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            overflow: hidden;
+            background: linear-gradient(180deg, #0a0014, #1a0022);
+            font-family: 'Inter', sans-serif;
+            touch-action: none;
+            color: #fff;
+        }
+
+        #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #myVideo { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            transition: filter 1.6s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2; pointer-events: none; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 24px;
+        }
+
+        .header { text-align: center; }
+        .title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.6rem;
+            color: #ff1493;
+            text-shadow: 0 0 40px rgba(255,20,147,0.8);
+            letter-spacing: -1px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .subtitle { font-size: 1.1rem; opacity: 0.85; margin-top: 4px; }
+
+        #horninessMeter {
+            font-size: 1.3rem; color: #ff1493; text-shadow: 0 0 25px #ff1493;
+            margin-top: 8px; letter-spacing: 1px;
+        }
+
+        .counter-box {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255,20,147,0.6);
+            border-radius: 28px;
+            padding: 22px 40px;
+            text-align: center;
+            box-shadow: 0 0 70px rgba(255,20,147,0.4),
+                        inset 0 0 30px rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .counter-label { font-size: 1.05rem; letter-spacing: 3px; color: #ff99cc; font-weight: 500; }
+        .counter-number { 
+            font-size: 5.8rem; 
+            font-weight: 700; 
+            line-height: 1; 
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .timer-running .counter-number { animation: timerPulse 1.2s infinite ease-in-out; }
+        @keyframes timerPulse { 50% { transform: scale(1.08); } }
+
+        .goal-progress { 
+            height: 9px; 
+            background: linear-gradient(90deg, #ff1493, #ff69b4); 
+            border-radius: 9999px; 
+            margin-top: 14px; 
+            transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        canvas#particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+
+        .action-btn { 
+            position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(90deg, #ff1493, #ff4da6);
+            padding: 18px 58px; border-radius: 9999px;
+            font-size: 1.45rem; font-weight: 600;
+            box-shadow: 0 20px 50px rgba(255,20,147,0.6);
+            pointer-events: auto;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .action-btn:active { transform: translateX(-50%) scale(0.94); }
+
+        .touch-flash { 
+            position: fixed; width: 130px; height: 130px;
+            background: radial-gradient(circle, rgba(255,105,180,0.9) 0%, transparent 70%);
+            border-radius: 50%; pointer-events: none; z-index: 10;
+            animation: flashPop 800ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes flashPop { 
+            0% { transform: scale(0.1); opacity: 1; } 
+            100% { transform: scale(4.5); opacity: 0; } 
+        }
+
+        #settingsBtn, #addVideosBtn {
+            position: fixed; top: 20px; right: 20px; z-index: 30;
+            background: rgba(0,0,0,0.5); color: #ff69b4; border: none;
+            width: 52px; height: 52px; border-radius: 50%; font-size: 26px;
+            box-shadow: 0 0 25px rgba(255,105,180,0.4);
+            transition: all 0.3s ease;
+        }
+        #addVideosBtn { right: 82px; font-size: 24px; }
+
+        .dirty-text { 
+            position: absolute; font-size: 1.5rem; font-weight: 700;
+            color: #ff99cc; text-shadow: 0 0 30px #ff1493;
+            pointer-events: none; animation: dirtyPop 3.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; z-index: 20;
+        }
+        @keyframes dirtyPop {
+            0% { transform: scale(0.3) translateY(70px); opacity: 0; }
+            30% { transform: scale(1.2) translateY(-35px); opacity: 1; }
+            75% { opacity: 1; }
+            100% { transform: scale(0.8) translateY(-140px); opacity: 0; }
+        }
+
+        #settingsPanel {
+            position:fixed; top:0; right:-340px; width:340px; height:100%;
+            background: rgba(10,0,20,0.96); backdrop-filter: blur(20px);
+            z-index:40; padding:30px; color:#ffb3d1;
+            transition:right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y:auto;
+            border-left: 1px solid rgba(255,20,147,0.3);
+            touch-action: auto;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 9px;
+            background: linear-gradient(to right, #ff69b4, #ff1493);
+            border-radius: 9999px;
+            outline: none;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255,20,147,0.4);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border: 4px solid #ff1493;
+            border-radius: 50%;
+            box-shadow: 0 0 25px rgba(255,20,147,0.8),
+                        0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.25);
+            box-shadow: 0 0 35px rgba(255,20,147,1);
+        }
+
+        .mode-card {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .mode-card.active { border-color: #ff1493; background: rgba(255,20,147,0.15); }
+        .emoji-picker { 
+            display: flex; 
+            gap: 12px; 
+            flex-wrap: wrap; 
+            margin-top: 12px; 
+        }
+        .emoji-btn { 
+            font-size: 1.9rem; 
+            padding: 10px; 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 14px; 
+            cursor: pointer; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .emoji-btn:hover { transform: scale(1.25); background: #ff1493; }
+
+        .progress-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+        }
+
+        .moan-item, .video-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.08);
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+        }
+
+        .rep-flash {
+            position: fixed;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ff1493;
+            text-shadow: 0 0 40px #ff69b4;
+            pointer-events: none;
+            animation: repPop 900ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            z-index: 25;
+        }
+        @keyframes repPop {
+            0% { transform: scale(0.4) translateY(0); opacity: 1; }
+            40% { transform: scale(1.3) translateY(-60px); }
+            100% { transform: scale(0.9) translateY(-140px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="video-container">
+        <video id="myVideo" autoplay muted playsinline></video>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <div id="overlay">
+        <div class="header">
+            <div id="modeTitle" class="title">💦 Push for Pussy</div>
+            <div class="subtitle" id="goalText">Goal: 50 push-ups</div>
+            <div id="horninessMeter">💦 PUSSY WETNESS: <span id="wetnessLevel">0%</span></div>
+        </div>
+
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+            <div class="counter-box" id="counterBox">
+                <div class="counter-label" id="counterLabel">PUSH-UPS <span id="progress">0 / 50</span></div>
+                <div id="counter" class="counter-number">0</div>
+                <div class="goal-progress" id="goalProgress" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div>
+            <div id="actionBtn" class="action-btn">💦 TAP ANYWHERE</div>
+            <div style="text-align:center; font-size:0.95rem; opacity:0.6; margin-top:20px;" id="footerText">
+                Videos &amp; moans stay forever • Peak slutty edition 💦
+            </div>
+        </div>
+    </div>
+
+    <button id="addVideosBtn">📹</button>
+    <button id="settingsBtn">⚙️</button>
+
+    <input type="file" id="videoInput" multiple accept="video/mp4,video/quicktime" style="display:none">
+
+    <!-- Sexy Settings Panel -->
+    <div id="settingsPanel">
+        <h2 style="margin-bottom:24px;color:#ff69b4;font-size:1.6rem;">Choose Your Mode 🔥</h2>
+        
+        <div id="modesContainer"></div>
+
+        <div style="margin: 32px 0 20px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">📈 Your Progress (saved forever)</label>
+            <div id="progressSummary" style="background:rgba(255,255,255,0.08);padding:12px;border-radius:16px;max-height:260px;overflow-y:auto;font-size:1.05rem;"></div>
+        </div>
+
+        <div style="margin:32px 0 20px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">📋 Today’s Horny Checklist</label>
+            <div id="checklistContainer" style="background:rgba(255,255,255,0.08);padding:12px;border-radius:16px;"></div>
+        </div>
+
+        <div style="margin: 28px 0 20px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">Custom Emoji for this mode</label>
+            <div id="emojiPicker" class="emoji-picker"></div>
+        </div>
+
+        <div style="margin-top:20px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;" id="goalLabel">Goal</label>
+            <input id="goalInput" type="number" value="50" 
+                   style="width:100%;padding:16px;background:rgba(255,255,255,0.1);border:2px solid #ff69b4;border-radius:20px;color:#fff;font-size:1.4rem;text-align:center;">
+        </div>
+
+        <div style="margin-top:28px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">🔊 Your Own Moan Sounds</label>
+            <input type="file" id="moanInput" multiple accept="audio/mp3,audio/wav,audio/m4a,audio/ogg" style="width:100%;padding:12px;background:rgba(255,255,255,0.1);border:2px solid #ff69b4;border-radius:20px;color:#fff;">
+            <p style="font-size:0.85rem;opacity:0.7;margin-top:6px;">Upload short horny audio clips • They stay forever</p>
+            <div id="moanList" style="margin-top:12px;max-height:160px;overflow-y:auto;"></div>
+        </div>
+
+        <div style="margin-top:28px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">📹 Your Videos (stay forever – no re-selecting!)</label>
+            <div id="videoList" style="margin-top:12px;max-height:160px;overflow-y:auto;"></div>
+        </div>
+
+        <div style="margin-top:24px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">Moan Volume</label>
+            <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.85" style="width:100%;">
+            <div style="display:flex;justify-content:space-between;font-size:0.9rem;opacity:0.7;margin-top:4px;">
+                <span>Quiet</span>
+                <span id="volumeValue">85%</span>
+                <span>Loud</span>
+            </div>
+        </div>
+
+        <div style="margin-top:24px;">
+            <label style="display:block;margin-bottom:8px;font-size:1.15rem;">📳 Haptic Feedback</label>
+            <label style="display:flex;align-items:center;background:rgba(255,255,255,0.1);padding:14px 18px;border-radius:9999px;cursor:pointer;">
+                <input type="checkbox" id="hapticsToggle" style="margin-right:12px;width:22px;height:22px;accent-color:#ff1493;">
+                <span style="flex:1;font-size:1.05rem;">Enable light vibration on taps</span>
+            </label>
+        </div>
+
+        <button onclick="setNewGoal()" 
+                style="width:100%;margin-top:24px;padding:18px;background:linear-gradient(90deg,#ff1493,#ff4da6);color:#fff;border:none;border-radius:9999px;font-size:1.2rem;font-weight:600;">
+            💾 Save Everything
+        </button>
+
+        <div style="margin-top:40px;font-size:0.9rem;opacity:0.7;line-height:1.5;">
+            Peak slutty desperate edition • Videos &amp; moans stay forever 💦
+        </div>
+
+        <button id="closeSettings" style="margin-top:30px;width:100%;padding:14px;background:rgba(255,255,255,0.1);border:2px solid #ff69b4;border-radius:9999px;color:#ffb3d1;">Close</button>
+    </div>
+
+    <script>
+        // ================== CORE VARIABLES ==================
+        let currentMode = 'pushups';
+        let goal = 50;
+        let videos = [];
+        let currentVideoIndex = 0;
+        let isRewardMode = false;
+
+        let timerInterval = null;
+        let isTimerRunning = false;
+
+        let globalVolume = 0.85;
+        let customMoans = [];
+        let enableHaptics = true;
+
+        let lastMoanTime = 0;
+        let lastDirtyTextTime = 0;
+        let lastParticleTime = 0;
+        let isSettingsOpen = false;
+
+        let dailyChecklist = {};
+
+        let modes = {
+            pushups: { name: "Push for Pussy", emoji: "💦", icon: "💪", type: "reps", label: "PUSH-UPS" },
+            squats:  { name: "Squat for Pussy", emoji: "🍑", icon: "🦵", type: "reps", label: "SQUATS" },
+            situps:  { name: "Sit-up for Pussy", emoji: "🔥", icon: "🪑", type: "reps", label: "SIT-UPS" },
+            plank:   { name: "Plank for Pussy", emoji: "🥵", icon: "🧱", type: "timer", label: "PLANK" },
+            wallsit: { name: "Wall-sit for Pussy", emoji: "🔥", icon: "🧱", type: "timer", label: "WALL-SIT" },
+            lunges:  { name: "Lunge for Pussy", emoji: "🍑", icon: "🦵", type: "reps", label: "LUNGES" },
+            burpees: { name: "Burpee for Pussy", emoji: "🔥", icon: "🏃", type: "reps", label: "BURPEES" },
+            mountainclimbers: { name: "Climber for Pussy", emoji: "🏔️", icon: "🏔️", type: "reps", label: "CLIMBERS" }
+        };
+
+        let pushupsCount = 0, squatsCount = 0, situpsCount = 0, lungesCount = 0, burpeesCount = 0, mountainclimbersCount = 0;
+        let plankSeconds = 0, wallsitSeconds = 0;
+
+        const videoEl = document.getElementById('myVideo');
+        const counterEl = document.getElementById('counter');
+        const progressEl = document.getElementById('progress');
+        const goalProgressEl = document.getElementById('goalProgress');
+        const goalTextEl = document.getElementById('goalText');
+        const modeTitleEl = document.getElementById('modeTitle');
+        const counterLabelEl = document.getElementById('counterLabel');
+        const actionBtn = document.getElementById('actionBtn');
+        const counterBox = document.getElementById('counterBox');
+
+        // ================== INDEXEDDB ==================
+        let dbInstance = null;
+        const DB_NAME = 'HornyWorkoutDB';
+        const DB_VERSION = 1;
+
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('videos')) {
+                        db.createObjectStore('videos', { keyPath: 'id' });
+                    }
+                };
+                req.onsuccess = (e) => {
+                    dbInstance = e.target.result;
+                    resolve(dbInstance);
+                };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function getAllVideos() {
+            if (!dbInstance) await openDB();
+            return new Promise((resolve) => {
+                const tx = dbInstance.transaction('videos', 'readonly');
+                const store = tx.objectStore('videos');
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => resolve([]);
+            });
+        }
+
+        async function addVideoToDB(file) {
+            if (!dbInstance) await openDB();
+            return new Promise((resolve) => {
+                const tx = dbInstance.transaction('videos', 'readwrite');
+                const store = tx.objectStore('videos');
+                const entry = {
+                    id: 'vid-' + Date.now() + '-' + Math.random().toString(36).slice(2),
+                    name: file.name,
+                    type: file.type,
+                    blob: file
+                };
+                const req = store.add(entry);
+                req.onsuccess = () => resolve(entry.id);
+                req.onerror = () => resolve(null);
+            });
+        }
+
+        async function deleteVideoFromDB(id) {
+            if (!dbInstance) await openDB();
+            return new Promise((resolve) => {
+                const tx = dbInstance.transaction('videos', 'readwrite');
+                const store = tx.objectStore('videos');
+                const req = store.delete(id);
+                req.onsuccess = () => resolve(true);
+                req.onerror = () => resolve(false);
+            });
+        }
+
+        // ================== SAVE / LOAD ==================
+        function saveProgress() {
+            localStorage.setItem('currentMode', currentMode);
+            localStorage.setItem('goal', goal);
+            localStorage.setItem('globalVolume', globalVolume);
+            localStorage.setItem('customMoans', JSON.stringify(customMoans));
+            localStorage.setItem('enableHaptics', enableHaptics);
+            localStorage.setItem('dailyChecklist', JSON.stringify(dailyChecklist));
+
+            localStorage.setItem('pushupsCount', pushupsCount);
+            localStorage.setItem('squatsCount', squatsCount);
+            localStorage.setItem('situpsCount', situpsCount);
+            localStorage.setItem('lungesCount', lungesCount);
+            localStorage.setItem('burpeesCount', burpeesCount);
+            localStorage.setItem('mountainclimbersCount', mountainclimbersCount);
+            localStorage.setItem('plankSeconds', plankSeconds);
+            localStorage.setItem('wallsitSeconds', wallsitSeconds);
+
+            Object.keys(modes).forEach(m => localStorage.setItem(m + 'Emoji', modes[m].emoji));
+        }
+
+        function loadProgress() {
+            const savedMode = localStorage.getItem('currentMode');
+            if (savedMode && modes[savedMode]) currentMode = savedMode;
+
+            const savedGoal = localStorage.getItem('goal');
+            if (savedGoal) goal = parseInt(savedGoal);
+
+            const savedVol = localStorage.getItem('globalVolume');
+            if (savedVol) globalVolume = parseFloat(savedVol);
+
+            const savedMoans = localStorage.getItem('customMoans');
+            if (savedMoans) customMoans = JSON.parse(savedMoans);
+
+            const savedHaptics = localStorage.getItem('enableHaptics');
+            if (savedHaptics !== null) enableHaptics = savedHaptics === 'true';
+
+            dailyChecklist = JSON.parse(localStorage.getItem('dailyChecklist') || '{}');
+
+            pushupsCount = parseInt(localStorage.getItem('pushupsCount') || 0);
+            squatsCount = parseInt(localStorage.getItem('squatsCount') || 0);
+            situpsCount = parseInt(localStorage.getItem('situpsCount') || 0);
+            lungesCount = parseInt(localStorage.getItem('lungesCount') || 0);
+            burpeesCount = parseInt(localStorage.getItem('burpeesCount') || 0);
+            mountainclimbersCount = parseInt(localStorage.getItem('mountainclimbersCount') || 0);
+            plankSeconds = parseInt(localStorage.getItem('plankSeconds') || 0);
+            wallsitSeconds = parseInt(localStorage.getItem('wallsitSeconds') || 0);
+
+            Object.keys(modes).forEach(m => {
+                const savedEmoji = localStorage.getItem(m + 'Emoji');
+                if (savedEmoji) modes[m].emoji = savedEmoji;
+            });
+        }
+
+        async function loadVideos() {
+            const saved = await getAllVideos();
+            videos = [];
+            for (let v of saved) {
+                const url = URL.createObjectURL(v.blob);
+                videos.push({ id: v.id, name: v.name, url });
+            }
+        }
+
+        // ================== PARTICLES ==================
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        let particlesArray = [];
+
+        class Particle {
+            constructor(x, y, emoji) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 18 + 12;
+                this.speedX = Math.random() * 3.5 - 1.8;
+                this.speedY = Math.random() * -8 - 9;
+                this.life = 130;
+                this.gravity = 0.055;
+                this.emoji = emoji;
+                this.rotation = Math.random() * 360;
+                this.rotSpeed = (Math.random() - 0.5) * 2;
+                this.alphaPulse = Math.random() * Math.PI * 2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += this.gravity;
+                this.speedX *= 0.978;
+                this.life--;
+                this.size *= 0.98;
+                this.rotation += this.rotSpeed;
+                this.alphaPulse += 0.11;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = (this.life / 130) * (0.8 + Math.sin(this.alphaPulse) * 0.2);
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.font = `${this.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.emoji, 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function createDreamParticles(count, x, y) {
+            if (particlesArray.length > 35) particlesArray.length = 22;
+            const emoji = modes[currentMode].emoji;
+            for (let i = 0; i < count; i++) {
+                particlesArray.push(new Particle(x + (Math.random()*60-30), y + (Math.random()*60-30), emoji));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = particlesArray.length-1; i >= 0; i--) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                if (particlesArray[i].life <= 0 || particlesArray[i].size <= 2) particlesArray.splice(i,1);
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        function showDirtyText(text, x=null, y=null) {
+            const el = document.createElement('div');
+            el.className = 'dirty-text';
+            el.textContent = text;
+            if (x && y) {
+                el.style.left = `${x-100}px`;
+                el.style.top = `${y-50}px`;
+            } else {
+                el.style.left = `${20 + Math.random()*60}%`;
+                el.style.bottom = `${30 + Math.random()*35}%`;
+            }
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+
+        function showRepFlash(count, x, y) {
+            const flash = document.createElement('div');
+            flash.className = 'rep-flash';
+            flash.textContent = `+${count}`;
+            flash.style.left = `${x - 40}px`;
+            flash.style.top = `${y - 80}px`;
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 1100);
+        }
+
+        const dirtyTiers = {
+            pushups: [{min:0,phrases:["Mmm daddy… your arms are making my boy-pussy throb","Good boy just like that 💪"]},{min:15,phrases:["Fuck yes pump harder daddy I'm leaking for your cock","My clit is so swollen watching you"]},{min:40,phrases:["Oh god my slutty hole is clenching so hard","I'm dripping everywhere for you daddy"]},{min:80,phrases:["Don't stop I'm gonna cum so fucking hard","Breed this desperate boy-pussy 💦"]}],
+            squats: [{min:0,phrases:["Squat deeper daddy my ass is begging for your cock","Ass down… good boy 🍑"]},{min:15,phrases:["Fuck yes bounce that ass I'm so wet","My pussy is throbbing for you"]},{min:40,phrases:["I'm literally soaked imagining you fucking me from behind","Deeper daddy stretch me open"]},{min:80,phrases:["I'd ride you so hard right now","You own this slutty ass 💦"]}],
+            situps: [{min:0,phrases:["Crunch for me daddy my pussy is getting soaked","Feel that burn baby"]},{min:15,phrases:["Mmm you're making my cunt clench","Up and down just like you'd fuck me"]},{min:40,phrases:["I'm dripping all over the floor","Faster daddy I'm your desperate slut"]},{min:80,phrases:["I'm gonna cum just from watching you","Fuck me after this daddy 🔥"]}],
+            plank: [{min:0,phrases:["Hold it daddy… my pussy is twitching","Shake for me baby"]},{min:30,phrases:["Fuck your legs are shaking and so is my cunt","Don't drop you're doing so good"]},{min:70,phrases:["I'm literally dripping for you","My boy-pussy is begging to be filled"]},{min:120,phrases:["You're a beast… I'm gonna squirt","Breed me while you hold that plank 💦"]}],
+            wallsit: [{min:0,phrases:["Burn for me daddy my pussy is on fire","Hold that position"]},{min:30,phrases:["Fuck your legs are shaking and I'm soaked","Stay down you're so strong"]},{min:70,phrases:["I'm literally dripping down my thighs","Keep holding baby I'm your slut"]},{min:120,phrases:["I'm soaked… don't quit","Fuck me senseless right now 🔥"]}],
+            lunges: [{min:0,phrases:["Step for me daddy my ass needs your cock","Lunge deeper 🍑"]},{min:15,phrases:["Fuck yes spread those legs I'm throbbing","My pussy is so wet for you"]},{min:40,phrases:["I'm literally dripping watching you","Harder baby stretch me"]},{min:80,phrases:["You own this desperate hole","Breed me daddy 💦"]}],
+            burpees: [{min:0,phrases:["Explode for me daddy my cunt is aching","Jump up baby"]},{min:15,phrases:["Fuck you're so strong and I'm so wet","I'm soaked just watching you"]},{min:40,phrases:["Don't stop I'm gonna cum so hard","Faster daddy I'm your needy slut"]},{min:80,phrases:["You're making me drip everywhere","Fuck me after this daddy"]}],
+            mountainclimbers: [{min:0,phrases:["Climb for me daddy my pussy is pulsing","Knees to chest"]},{min:15,phrases:["Mmm I'm getting so fucking wet","Faster baby you're killing it"]},{min:40,phrases:["My cunt is twitching so bad","Keep pumping for me daddy"]},{min:80,phrases:["I'm literally soaked… don't stop","You're a fucking beast breed me 💦"]}]
+        };
+
+        function getEscalatingDirtyText() {
+            const isRep = modes[currentMode].type === 'reps';
+            const value = isRep ? window[currentMode + 'Count'] || 0 : window[currentMode + 'Seconds'] || 0;
+            const tiers = dirtyTiers[currentMode] || dirtyTiers.pushups;
+            for (let i = tiers.length-1; i>=0; i--) {
+                if (value >= tiers[i].min) return tiers[i].phrases[Math.floor(Math.random()*tiers[i].phrases.length)];
+            }
+            return tiers[0].phrases[0];
+        }
+
+        function playCustomMoan() {
+            if (customMoans.length === 0) return;
+            if (Date.now() - lastMoanTime < 380) return;
+            lastMoanTime = Date.now();
+            const randomMoan = customMoans[Math.floor(Math.random() * customMoans.length)];
+            const audio = new Audio(randomMoan.dataURL);
+            audio.volume = globalVolume;
+            audio.play().catch(() => {});
+        }
+
+        const videoInput = document.getElementById('videoInput');
+
+        async function addVideos(files) {
+            let added = 0;
+            for (let file of files) {
+                if (file.type.startsWith('video/')) {
+                    await addVideoToDB(file);
+                    added++;
+                }
+            }
+            if (added > 0) {
+                await loadVideos();
+                if (videos.length > 0) {
+                    currentVideoIndex = Math.floor(Math.random() * videos.length);
+                    loadCurrentVideo();
+                }
+                alert(`✅ Added ${added} videos permanently! They will be here every time you open the app 💦`);
+            }
+        }
+
+        function loadCurrentVideo() {
+            if (videos.length === 0) {
+                videoEl.src = "kiss-video.mp4";
+                videoEl.loop = true;
+                videoEl.load();
+                videoEl.play().catch(() => {});
+                return;
+            }
+            videoEl.src = videos[currentVideoIndex].url;
+            videoEl.loop = false;
+            videoEl.load();
+            videoEl.play().catch(() => {});
+        }
+
+        function shuffleVideo() {
+            if (videos.length <= 1) return;
+            let idx = Math.floor(Math.random() * videos.length);
+            while (idx === currentVideoIndex) idx = Math.floor(Math.random() * videos.length);
+            currentVideoIndex = idx;
+            loadCurrentVideo();
+        }
+
+        videoEl.addEventListener('ended', () => {
+            if (videos.length > 1) shuffleVideo();
+            else if (videos.length === 1) {
+                videoEl.currentTime = 0;
+                videoEl.play().catch(() => {});
+            }
+        });
+
+        // ================== UI UPDATES (video filter removed) ==================
+        function updateGoalUI() {
+            const isRep = modes[currentMode].type === 'reps';
+            const value = isRep ? window[currentMode + 'Count'] || 0 : window[currentMode + 'Seconds'] || 0;
+            const percent = Math.min((value / goal) * 100, 100);
+
+            goalProgressEl.style.width = `${percent}%`;
+            progressEl.textContent = isRep ? `${value} / ${goal}` : `${Math.floor(value/60)}:${(value%60).toString().padStart(2,'0')} / ${Math.floor(goal/60)}:${(goal%60).toString().padStart(2,'0')}`;
+            counterEl.textContent = isRep ? value : `${Math.floor(value/60)}:${(value%60).toString().padStart(2,'0')}`;
+            counterLabelEl.textContent = modes[currentMode].label + ' ';
+            modeTitleEl.textContent = modes[currentMode].name + ' ';
+            goalTextEl.textContent = isRep ? `Goal: ${goal} ${modes[currentMode].label.toLowerCase()}` : `Goal: Hold ${goal} seconds`;
+
+            // wetness meter only (no ugly filter)
+            const wetness = Math.min(100, Math.floor(35 + (value / goal * 75)));
+            document.getElementById('wetnessLevel').textContent = wetness + '%';
+
+            if (modes[currentMode].type === 'timer' && isTimerRunning) {
+                counterBox.classList.add('timer-running');
+            } else {
+                counterBox.classList.remove('timer-running');
+            }
+
+            if (value >= goal && !isRewardMode) triggerReward();
+
+            if (value >= goal) {
+                dailyChecklist[currentMode] = true;
+                localStorage.setItem('dailyChecklist', JSON.stringify(dailyChecklist));
+            }
+
+            saveProgress();
+        }
+
+        function triggerReward() {
+            isRewardMode = true;
+            createDreamParticles(35, window.innerWidth/2, window.innerHeight*0.32);
+            showDirtyText("FUCK YES DADDY… you made it 💦 I'm cumming so hard for you, breed me now", null, null);
+            if (enableHaptics && 'vibrate' in navigator) navigator.vibrate([100,50,150,50,300]);
+            setTimeout(() => {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(255,20,147,0.95);color:#fff;padding:24px 50px;border-radius:9999px;font-size:1.4rem;z-index:9999;box-shadow:0 0 80px #ff1493;';
+                msg.innerHTML = `🎉 GOAL REACHED!<br><span style="font-size:1rem;opacity:0.9">I'm your desperate dripping slut now 💦</span>`;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 5200);
+            }, 1000);
+        }
+
+        function handleInteraction(e) {
+            if (isSettingsOpen || isRewardMode) return;
+            e.preventDefault();
+
+            const tx = e.clientX || window.innerWidth / 2;
+            const ty = e.clientY || window.innerHeight / 2;
+
+            if (modes[currentMode].type === 'reps') {
+                const countVar = currentMode + 'Count';
+                window[countVar] = (window[countVar] || 0) + 1;
+
+                counterEl.style.transform = 'scale(1.22)';
+                setTimeout(() => counterEl.style.transform = '', 140);
+
+                updateGoalUI();
+
+                const flash = document.createElement('div');
+                flash.className = 'touch-flash';
+                flash.style.left = `${tx-65}px`;
+                flash.style.top = `${ty-65}px`;
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 850);
+
+                if (Date.now() - lastParticleTime > 1200 && Math.random() < 0.3) {
+                    createDreamParticles(7, tx, ty);
+                    lastParticleTime = Date.now();
+                }
+                if (Date.now() - lastDirtyTextTime > 1100 && Math.random() < 0.38) {
+                    showDirtyText(getEscalatingDirtyText(), tx, ty);
+                    lastDirtyTextTime = Date.now();
+                }
+                showRepFlash(1, tx, ty);
+
+                if (Math.random() < 0.58) playCustomMoan();
+                if (enableHaptics && 'vibrate' in navigator) navigator.vibrate(12);
+            } 
+            else {
+                toggleTimer();
+            }
+        }
+
+        function toggleTimer() {
+            if (modes[currentMode].type !== 'timer') return;
+            const secondsVar = currentMode + 'Seconds';
+
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+            } else {
+                isTimerRunning = true;
+                timerInterval = setInterval(() => {
+                    window[secondsVar] = (window[secondsVar] || 0) + 1;
+                    updateGoalUI();
+                    if (Date.now() - lastParticleTime > 1400 && Math.random() < 0.25) {
+                        createDreamParticles(5, window.innerWidth*0.5, window.innerHeight*0.45);
+                        lastParticleTime = Date.now();
+                    }
+                    if (Date.now() - lastDirtyTextTime > 1300 && Math.random() < 0.35) {
+                        showDirtyText(getEscalatingDirtyText());
+                        lastDirtyTextTime = Date.now();
+                    }
+                    if (Math.random() < 0.65) playCustomMoan();
+                }, 1000);
+            }
+            updateActionButton();
+        }
+
+        function updateActionButton() {
+            const m = modes[currentMode];
+            if (m.type === 'reps') {
+                actionBtn.innerHTML = `💦 ${m.icon} TAP ANYWHERE`;
+                actionBtn.style.background = 'linear-gradient(90deg, #ff1493, #ff4da6)';
+            } else {
+                actionBtn.innerHTML = isTimerRunning ? `⏸️ PAUSE ${m.icon}` : `🥵 START ${m.icon}`;
+                actionBtn.style.background = isTimerRunning ? 'linear-gradient(90deg, #ff6666, #ff9999)' : 'linear-gradient(90deg, #ff1493, #ff4da6)';
+            }
+        }
+
+        function renderModes() {
+            const container = document.getElementById('modesContainer');
+            container.innerHTML = '';
+            Object.keys(modes).forEach(key => {
+                const m = modes[key];
+                const div = document.createElement('div');
+                div.className = `mode-card ${key === currentMode ? 'active' : ''}`;
+                div.innerHTML = `
+                    <div style="font-size:2.2rem;">${m.icon}</div>
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:1.2rem;">${m.name}</div>
+                        <div style="font-size:0.95rem;opacity:0.8;">${m.type === 'reps' ? 'Tap anywhere to count' : 'Tap anywhere to start timer'}</div>
+                    </div>
+                `;
+                div.onclick = () => {
+                    if (currentMode === key) return;
+                    if (modes[currentMode].type === 'timer') {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                    }
+                    currentMode = key;
+                    renderModes();
+                    renderEmojiPicker();
+                    renderProgressSummary();
+                    renderChecklist();
+                    updateActionButton();
+                    updateGoalUI();
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function renderEmojiPicker() {
+            const container = document.getElementById('emojiPicker');
+            container.innerHTML = '';
+            const emojis = ['💦', '🍑', '🥵', '🔥', '💪', '🦵', '🏔️', '💋', '🩸', '🫦', '😩'];
+            emojis.forEach(emoji => {
+                const btn = document.createElement('div');
+                btn.className = 'emoji-btn';
+                btn.textContent = emoji;
+                btn.onclick = () => {
+                    modes[currentMode].emoji = emoji;
+                    renderEmojiPicker();
+                    saveProgress();
+                    createDreamParticles(5, window.innerWidth/2, window.innerHeight/2);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderProgressSummary() {
+            const container = document.getElementById('progressSummary');
+            let html = '';
+            Object.keys(modes).forEach(key => {
+                const m = modes[key];
+                let val = 0;
+                if (m.type === 'reps') {
+                    val = window[key + 'Count'] || 0;
+                    html += `<div class="progress-item"><span>${m.icon} ${m.label}</span><span style="color:#ff99cc;font-weight:700;">${val} reps</span></div>`;
+                } else {
+                    val = window[key + 'Seconds'] || 0;
+                    const min = Math.floor(val / 60);
+                    const sec = (val % 60).toString().padStart(2, '0');
+                    html += `<div class="progress-item"><span>${m.icon} ${m.label}</span><span style="color:#ff99cc;font-weight:700;">${min}:${sec} held</span></div>`;
+                }
+            });
+            container.innerHTML = html || `<p style="text-align:center;opacity:0.6;padding:30px 10px;">No sweat yet… start pumping and watch your numbers grow 💦</p>`;
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('checklistContainer');
+            let html = '';
+            Object.keys(modes).forEach(key => {
+                const done = dailyChecklist[key] || false;
+                html += `
+                    <div class="progress-item" style="cursor:pointer;" onclick="toggleChecklist('${key}')">
+                        <span>${modes[key].icon} ${modes[key].label}</span>
+                        <input type="checkbox" ${done ? 'checked' : ''} style="accent-color:#ff1493;">
+                    </div>`;
+            });
+            container.innerHTML = html || '<p style="opacity:0.6;text-align:center;">finish a mode to unlock it 💦</p>';
+        }
+
+        function toggleChecklist(key) {
+            dailyChecklist[key] = !dailyChecklist[key];
+            localStorage.setItem('dailyChecklist', JSON.stringify(dailyChecklist));
+            renderChecklist();
+        }
+
+        function renderMoanList() {
+            const container = document.getElementById('moanList');
+            container.innerHTML = '';
+            if (customMoans.length === 0) {
+                container.innerHTML = `<p style="text-align:center;opacity:0.6;padding:20px 10px;font-size:0.9rem;">No custom moans yet • Upload some hot audio clips above 💋</p>`;
+                return;
+            }
+            customMoans.forEach((moan, index) => {
+                const div = document.createElement('div');
+                div.className = 'moan-item';
+                div.innerHTML = `
+                    <span style="font-size:1.05rem;">🎤 ${moan.name}</span>
+                    <button style="background:#ff1493;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;">×</button>
+                `;
+                div.querySelector('button').onclick = () => {
+                    customMoans.splice(index, 1);
+                    renderMoanList();
+                    saveProgress();
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function renderVideoList() {
+            const container = document.getElementById('videoList');
+            container.innerHTML = '';
+            if (videos.length === 0) {
+                container.innerHTML = `<p style="text-align:center;opacity:0.6;padding:20px 10px;font-size:0.9rem;">No videos yet • Tap the 📹 button at the top • They stay forever!</p>`;
+                return;
+            }
+            videos.forEach((vid) => {
+                const div = document.createElement('div');
+                div.className = 'video-item';
+                div.innerHTML = `
+                    <span style="font-size:1.05rem;">📹 ${vid.name}</span>
+                    <button style="background:#ff1493;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;">×</button>
+                `;
+                div.querySelector('button').onclick = async () => {
+                    URL.revokeObjectURL(vid.url);
+                    await deleteVideoFromDB(vid.id);
+                    await loadVideos();
+                    renderVideoList();
+                    if (videos.length === 0) {
+                        videoEl.src = "kiss-video.mp4";
+                        videoEl.loop = true;
+                        videoEl.load();
+                        videoEl.play().catch(() => {});
+                    } else {
+                        currentVideoIndex = Math.min(currentVideoIndex, videos.length - 1);
+                        loadCurrentVideo();
+                    }
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function handleMoanUpload(files) {
+            let processed = 0;
+            for (let file of files) {
+                if (!file.type.startsWith('audio/')) continue;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    customMoans.push({
+                        name: file.name.length > 22 ? file.name.substring(0, 19) + '...' : file.name,
+                        dataURL: e.target.result
+                    });
+                    processed++;
+                    if (processed === files.length) {
+                        renderMoanList();
+                        saveProgress();
+                        alert(`✅ Added ${files.length} custom moan${files.length > 1 ? 's' : ''}! They stay forever 💋`);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function setNewGoal() {
+            const newGoal = parseInt(document.getElementById('goalInput').value);
+            if (newGoal > 0) {
+                goal = newGoal;
+                const isRep = modes[currentMode].type === 'reps';
+                if (isRep) window[currentMode + 'Count'] = 0;
+                else window[currentMode + 'Seconds'] = 0;
+                isRewardMode = false;
+                updateGoalUI();
+                updateActionButton();
+                renderProgressSummary();
+                renderChecklist();
+                document.getElementById('settingsPanel').style.right = '-340px';
+                isSettingsOpen = false;
+                alert(`🔥 Goal saved • Now even sluttier & desperate 💦`);
+            }
+        }
+
+        // ================== EVENTS ==================
+        document.getElementById('addVideosBtn').addEventListener('click', () => videoInput.click());
+        videoInput.addEventListener('change', async (e) => {
+            if (e.target.files && e.target.files.length) {
+                await addVideos(e.target.files);
+            }
+            e.target.value = '';
+        });
+
+        document.getElementById('moanInput').addEventListener('change', e => {
+            if (e.target.files.length) handleMoanUpload(e.target.files);
+            e.target.value = '';
+        });
+
+        document.addEventListener('pointerdown', handleInteraction, { passive: false });
+
+        actionBtn.addEventListener('click', e => {
+            e.stopImmediatePropagation();
+            if (modes[currentMode].type === 'timer') toggleTimer();
+        });
+
+        let lastTap = 0;
+        document.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - lastTap < 280) {
+                if (confirm("Reset this session? 💦")) {
+                    const isRep = modes[currentMode].type === 'reps';
+                    if (isRep) window[currentMode + 'Count'] = 0;
+                    else window[currentMode + 'Seconds'] = 0;
+                    isRewardMode = false;
+                    if (modes[currentMode].type === 'timer') {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                    }
+                    updateGoalUI();
+                    updateActionButton();
+                    renderProgressSummary();
+                    renderChecklist();
+                    saveProgress();
+                }
+            }
+            lastTap = now;
+        });
+
+        document.getElementById('settingsBtn').addEventListener('click', async () => {
+            isSettingsOpen = true;
+            renderModes();
+            renderEmojiPicker();
+            renderProgressSummary();
+            renderChecklist();
+            renderMoanList();
+            renderVideoList();
+            document.getElementById('goalInput').value = goal;
+
+            const slider = document.getElementById('volumeSlider');
+            const volumeValue = document.getElementById('volumeValue');
+            slider.value = globalVolume;
+            volumeValue.textContent = Math.round(globalVolume * 100) + '%';
+
+            const hapticsToggle = document.getElementById('hapticsToggle');
+            hapticsToggle.checked = enableHaptics;
+            hapticsToggle.onchange = () => {
+                enableHaptics = hapticsToggle.checked;
+                saveProgress();
+            };
+
+            document.getElementById('settingsPanel').style.right = '0';
+        });
+
+        document.getElementById('closeSettings').addEventListener('click', () => {
+            document.getElementById('settingsPanel').style.right = '-340px';
+            isSettingsOpen = false;
+        });
+
+        const slider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+        slider.oninput = function() {
+            globalVolume = parseFloat(this.value);
+            volumeValue.textContent = Math.round(globalVolume * 100) + '%';
+            saveProgress();
+        };
+
+        // ================== STARTUP ==================
+        window.onload = async () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            window.addEventListener('resize', () => { 
+                canvas.width = window.innerWidth; 
+                canvas.height = window.innerHeight; 
+            });
+
+            animateParticles();
+            loadProgress();
+            await openDB();
+            await loadVideos();
+
+            renderModes();
+            renderEmojiPicker();
+            renderProgressSummary();
+            renderChecklist();
+            renderMoanList();
+            renderVideoList();
+            updateActionButton();
+            updateGoalUI();
+
+            if (videos.length === 0) {
+                loadCurrentVideo();
+            } else {
+                currentVideoIndex = Math.floor(Math.random() * videos.length);
+                loadCurrentVideo();
+            }
+
+            console.log('%c💦 Horny Workout Trainer v9.4 PEAK SLUTTY • video clean again 💦', 'color:#ff1493;font-size:17px;font-weight:bold');
+        };
+    </script>
+</body>
+</html>
