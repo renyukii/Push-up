@@ -30,39 +30,49 @@
         #overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             z-index: 2; pointer-events: none; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 24px;
+            justify-content: space-between; padding: 20px 24px;
         }
 
-        .header { text-align: center; }
-        .title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.6rem;
+        .header { 
+            text-align: center; 
+            background: rgba(10, 0, 20, 0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 9999px;
+            padding: 14px 28px;
+            width: fit-content;
+            margin: 0 auto;
+            box-shadow: 0 8px 30px rgba(255,20,147,0.25);
+        }
+        .subtitle { 
+            font-size: 1.45rem; 
+            font-weight: 600;
             color: #ff1493;
-            text-shadow: 0 0 40px rgba(255,20,147,0.8);
-            letter-spacing: -1px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .subtitle { font-size: 1.1rem; opacity: 0.85; margin-top: 4px; }
-
-        #horninessMeter {
-            font-size: 1.3rem; color: #ff1493; text-shadow: 0 0 25px #ff1493;
-            margin-top: 8px; letter-spacing: 1px;
+            text-shadow: 0 0 25px rgba(255,20,147,0.6);
+            letter-spacing: -0.5px;
+            opacity: 0.95;
         }
 
         .counter-box {
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255,20,147,0.6);
+            background: rgba(255,255,255,0.09);
+            backdrop-filter: blur(22px);
+            border: 2px solid rgba(255,20,147,0.55);
             border-radius: 28px;
-            padding: 22px 40px;
+            padding: 18px 32px;
             text-align: center;
-            box-shadow: 0 0 70px rgba(255,20,147,0.4),
-                        inset 0 0 30px rgba(255,255,255,0.1);
+            box-shadow: 0 0 60px rgba(255,20,147,0.35),
+                        inset 0 0 25px rgba(255,255,255,0.1);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            max-width: 320px;
         }
-        .counter-label { font-size: 1.05rem; letter-spacing: 3px; color: #ff99cc; font-weight: 500; }
+        .counter-label { 
+            font-size: 0.95rem; 
+            letter-spacing: 2.5px; 
+            color: #ff99cc; 
+            font-weight: 500; 
+        }
         .counter-number { 
-            font-size: 5.8rem; 
+            font-size: 4.35rem; 
             font-weight: 700; 
             line-height: 1; 
             transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -71,25 +81,27 @@
         @keyframes timerPulse { 50% { transform: scale(1.08); } }
 
         .goal-progress { 
-            height: 9px; 
+            height: 8px; 
             background: linear-gradient(90deg, #ff1493, #ff69b4); 
             border-radius: 9999px; 
-            margin-top: 14px; 
+            margin-top: 12px; 
             transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         canvas#particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
 
         .action-btn { 
-            position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(90deg, #ff1493, #ff4da6);
-            padding: 18px 58px; border-radius: 9999px;
-            font-size: 1.45rem; font-weight: 600;
-            box-shadow: 0 20px 50px rgba(255,20,147,0.6);
+            padding: 17px 56px; 
+            border-radius: 9999px;
+            font-size: 1.4rem; 
+            font-weight: 600;
+            box-shadow: 0 18px 45px rgba(255,20,147,0.55);
             pointer-events: auto;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
         }
-        .action-btn:active { transform: translateX(-50%) scale(0.94); }
+        .action-btn:active { transform: scale(0.94); }
 
         .touch-flash { 
             position: fixed; width: 130px; height: 130px;
@@ -235,25 +247,23 @@
     <canvas id="particles"></canvas>
 
     <div id="overlay">
+        <!-- Clean top header - only goal remains -->
         <div class="header">
-            <div id="modeTitle" class="title">💦 Push for Pussy</div>
             <div class="subtitle" id="goalText">Goal: 50 push-ups</div>
-            <div id="horninessMeter">💦 PUSSY WETNESS: <span id="wetnessLevel">0%</span></div>
         </div>
 
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center;">
+        <!-- Everything else moved to bottom so video is completely clear in the middle -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 22px; pointer-events: auto; width: 100%; max-width: 340px; margin: 0 auto;">
+            
+            <!-- Counter at bottom -->
             <div class="counter-box" id="counterBox">
                 <div class="counter-label" id="counterLabel">PUSH-UPS <span id="progress">0 / 50</span></div>
                 <div id="counter" class="counter-number">0</div>
                 <div class="goal-progress" id="goalProgress" style="width: 0%"></div>
             </div>
-        </div>
 
-        <div>
+            <!-- Action button -->
             <div id="actionBtn" class="action-btn">💦 TAP ANYWHERE</div>
-            <div style="text-align:center; font-size:0.95rem; opacity:0.6; margin-top:20px;" id="footerText">
-                Videos &amp; moans stay forever • Peak slutty edition 💦
-            </div>
         </div>
     </div>
 
@@ -324,11 +334,7 @@
             💾 Save Everything
         </button>
 
-        <div style="margin-top:40px;font-size:0.9rem;opacity:0.7;line-height:1.5;">
-            Peak slutty desperate edition • Videos &amp; moans stay forever 💦
-        </div>
-
-        <button id="closeSettings" style="margin-top:30px;width:100%;padding:14px;background:rgba(255,255,255,0.1);border:2px solid #ff69b4;border-radius:9999px;color:#ffb3d1;">Close</button>
+        <button id="closeSettings" style="margin-top:40px;width:100%;padding:14px;background:rgba(255,255,255,0.1);border:2px solid #ff69b4;border-radius:9999px;color:#ffb3d1;">Close</button>
     </div>
 
     <script>
@@ -372,7 +378,6 @@
         const progressEl = document.getElementById('progress');
         const goalProgressEl = document.getElementById('goalProgress');
         const goalTextEl = document.getElementById('goalText');
-        const modeTitleEl = document.getElementById('modeTitle');
         const counterLabelEl = document.getElementById('counterLabel');
         const actionBtn = document.getElementById('actionBtn');
         const counterBox = document.getElementById('counterBox');
@@ -666,7 +671,7 @@
             }
         });
 
-        // ================== UI UPDATES (video filter removed) ==================
+        // ================== UI UPDATES ==================
         function updateGoalUI() {
             const isRep = modes[currentMode].type === 'reps';
             const value = isRep ? window[currentMode + 'Count'] || 0 : window[currentMode + 'Seconds'] || 0;
@@ -676,12 +681,7 @@
             progressEl.textContent = isRep ? `${value} / ${goal}` : `${Math.floor(value/60)}:${(value%60).toString().padStart(2,'0')} / ${Math.floor(goal/60)}:${(goal%60).toString().padStart(2,'0')}`;
             counterEl.textContent = isRep ? value : `${Math.floor(value/60)}:${(value%60).toString().padStart(2,'0')}`;
             counterLabelEl.textContent = modes[currentMode].label + ' ';
-            modeTitleEl.textContent = modes[currentMode].name + ' ';
             goalTextEl.textContent = isRep ? `Goal: ${goal} ${modes[currentMode].label.toLowerCase()}` : `Goal: Hold ${goal} seconds`;
-
-            // wetness meter only (no ugly filter)
-            const wetness = Math.min(100, Math.floor(35 + (value / goal * 75)));
-            document.getElementById('wetnessLevel').textContent = wetness + '%';
 
             if (modes[currentMode].type === 'timer' && isTimerRunning) {
                 counterBox.classList.add('timer-running');
@@ -1087,7 +1087,7 @@
                 loadCurrentVideo();
             }
 
-            console.log('%c💦 Horny Workout Trainer v9.4 PEAK SLUTTY • video clean again 💦', 'color:#ff1493;font-size:17px;font-weight:bold');
+            console.log('%c💦 Horny Workout Trainer v9.6 • UI fully cleaned 💦', 'color:#ff1493;font-size:17px;font-weight:bold');
         };
     </script>
 </body>
